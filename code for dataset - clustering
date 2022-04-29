@@ -1,0 +1,18 @@
+
+with T1 
+as (
+SELECT  user_id, count( user_id) as frequency,sum(amount) as order_value
+FROM `efood2022-348619.main_assessment.orders`
+group by user_id),
+
+T2 as (
+SELECT  user_id,cuisine,city, count( user_id) as frequency_c,sum(amount) as order_value_c
+FROM `efood2022-348619.main_assessment.orders`
+group by user_id,cuisine,city)
+
+
+select T2.*,T1.frequency,order_value from T2 
+left outer join T1 on T1.user_id = T2.user_id
+order by user_id
+
+
