@@ -1,0 +1,54 @@
+with cities_brek as
+(
+SELECT  city, cuisine,count(distinct order_id) as No_orders, sum(amount) as Amount_spent, count(distinct user_id) No_Customers
+FROM `efood2022-348619.main_assessment.orders`
+where cuisine = 'Breakfast'
+group by city, cuisine
+having count(distinct order_id) > 1000),
+
+cities_tot as (
+SELECT  city, count(distinct order_id) as No_orders, sum(amount) as Amount_spent, count(distinct user_id) No_Customers
+        
+FROM `efood2022-348619.main_assessment.orders`
+group by city
+having count(distinct order_id) > 1000),
+
+
+cities_brek_over3 as
+(
+select city, count(distinct user_id) No_Cust_over3_brek
+from (
+SELECT  city, user_id,count(distinct order_id) as No_orders, sum(amount) as Amount_spent
+FROM `efood2022-348619.main_assessment.orders`
+where cuisine = 'Breakfast'
+group by city, user_id
+having count(distinct order_id) > 3 ) t1
+group by city
+
+),
+
+cities_tot_over3 as
+(
+select city, count(distinct user_id)  No_Cust_over3_tot
+from (
+SELECT  city, user_id,count(distinct order_id) as No_orders, sum(amount) as Amount_spent
+FROM `efood2022-348619.main_assessment.orders`
+
+group by city, user_id
+having count(distinct order_id) > 3 ) t1
+group by city
+
+)
+
+select cb.city,cb.No_orders as No_orders_breakfast, cb.Amount_spent as Amount_spent_breakfast,cb.No_Customers as No_Customers_breakfast,
+       cb.Amount_spent/cb.No_orders as Basket_breakfast, cb.No_orders/cb.No_Customers as Frequency_breakfast, cb3.No_Cust_over3_brek/cb.No_Customers as prc_Users_Breakfast,
+    ct.No_orders as No_orders_ttl, ct.Amount_spent as Amount_spent_ttl,ct.No_Customers as No_Customers_ttl,
+    ct.Amount_spent/ct.No_orders as Basket_ttl, ct.No_orders/ct.No_Customers as Frequency_ttl, ct3.No_Cust_over3_tot/ct.No_Customers as prc_Users_ttl
+
+ from cities_brek cb
+left outer join cities_tot ct on cb.city = ct.city
+left outer join cities_brek_over3 cb3 on cb.city = cb3.city
+left outer join cities_tot_over3 ct3 on cb.city = ct3.city
+order by cb.No_orders desc limit 5
+
+
