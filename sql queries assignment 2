@@ -1,0 +1,22 @@
+with orders_users
+as (
+SELECT  city,user_id, count(distinct order_id) as No_orders
+FROM `efood2022-348619.main_assessment.orders`
+group by city,user_id),
+
+orders_city
+as (
+SELECT  city, count(distinct order_id) as No_orders
+FROM `efood2022-348619.main_assessment.orders`
+group by city)
+
+
+
+select * from
+(
+select ou.*, round(ou.No_orders/oc.No_orders,3) as city_contr,
+ROW_NUMBER() OVER (PARTITION BY ou.city Order by ou.No_orders desc ) as rnk
+
+from orders_users ou
+left outer join orders_city oc on ou.city = oc.city) ord
+where rnk <=10
